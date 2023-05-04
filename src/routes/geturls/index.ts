@@ -4,17 +4,20 @@ import isURL = require("is-url");
 const getUrls: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.get("/", async function (request, reply) {
     const client = await fastify.pg.connect();
-    let currentId: number = 6;
+    let currentId = request.user;
 
     try {
       const urls = await client.query("select * from urls where id = $1", [
         currentId,
       ]);
+
       if (urls.rows[0]) {
-        return urls.rows.map((elements: any) => ({
-          shorteneUrl: `${request.protocol}://${request.hostname}/${elements.short_url}`,
-          mainUrl: elements.original_url,
-        }));
+        return urls.rows.map(
+          (elements: { short_url: string; original_url: string }) => ({
+            shorteneUrl: `${request.protocol}://${request.hostname}/${elements.short_url}`,
+            mainUrl: elements.original_url,
+          })
+        );
       }
     } catch (err) {
       reply.code(400).send("there is an error in the database");

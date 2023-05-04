@@ -21,7 +21,7 @@ const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     }
     const date = new Date();
     const formattedDate = date.toISOString().slice(0, 10);
-    const userId = 6;
+    const userId = request.user;
     try {
       await client.query(
         "INSERT INTO urls(id,short_url,original_url,expired_date) VALUES ($1, $2, $3, $4)",

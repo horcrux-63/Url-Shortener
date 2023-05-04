@@ -1,7 +1,11 @@
 import AutoLoad, { AutoloadPluginOptions } from "@fastify/autoload";
+import fastifyPassport from "@fastify/passport";
 import { fastifyPostgres } from "@fastify/postgres";
+import { fastifySecureSession } from "@fastify/secure-session";
 import { FastifyPluginAsync } from "fastify";
+import * as fs from "fs";
 import { join } from "path";
+import { configurePassport } from "./configs/passport";
 
 export type AppOptions = {
   // Place your custom options for app below here.
@@ -18,6 +22,14 @@ const app: FastifyPluginAsync<AppOptions> = async (
   fastify.register(fastifyPostgres, {
     connectionString: "postgres://postgres:404624@127.0.0.1:5432/users",
   });
+
+  void fastify.register(fastifySecureSession, {
+    key: fs.readFileSync(join(__dirname, "secret-key")),
+  });
+  void fastify.register(fastifyPassport.initialize());
+  void fastify.register(fastifyPassport.secureSession());
+
+  configurePassport(fastify, opts);
   // Do not touch the following lines
 
   // This loads all plugins defined in plugins
