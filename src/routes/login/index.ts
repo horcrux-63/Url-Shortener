@@ -24,7 +24,9 @@ const login: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       ),
     },
     async function (request, reply) {
-      return request.user;
+      return reply.code(200).send({
+        message: "Successfully logged in",
+      });
     }
   );
 };
