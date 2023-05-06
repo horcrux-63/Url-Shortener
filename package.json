@@ -24,6 +24,7 @@
     "@fastify/secure-session": "^6.1.0",
     "@fastify/sensible": "^5.0.0",
     "bcrypt": "^5.1.0",
+    "dotenv": "^16.0.3",
     "fastify": "^4.0.0",
     "fastify-cli": "^5.7.1",
     "fastify-plugin": "^4.0.0",

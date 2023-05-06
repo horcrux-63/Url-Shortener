@@ -2,10 +2,12 @@ import AutoLoad, { AutoloadPluginOptions } from "@fastify/autoload";
 import fastifyPassport from "@fastify/passport";
 import { fastifyPostgres } from "@fastify/postgres";
 import { fastifySecureSession } from "@fastify/secure-session";
+import * as dotenv from "dotenv";
 import { FastifyPluginAsync } from "fastify";
 import * as fs from "fs";
 import { join } from "path";
 import { configurePassport } from "./configs/passport";
+dotenv.config();
 
 export type AppOptions = {
   // Place your custom options for app below here.
@@ -20,7 +22,7 @@ const app: FastifyPluginAsync<AppOptions> = async (
 ): Promise<void> => {
   // Place here your custom code!
   fastify.register(fastifyPostgres, {
-    connectionString: "postgres://postgres:404624@127.0.0.1:5432/users",
+    connectionString: process.env.SECURED_PASSWORD,
   });
 
   void fastify.register(fastifySecureSession, {
