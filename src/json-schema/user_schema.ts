@@ -34,6 +34,39 @@ export const createUrlDtoSchema = {
   additionalProperties: false,
 } as const satisfies JSONSchema;
 
+export const getUrlDtoSchema = {
+  type: "object",
+  properties: {
+    id: { type: "string", maxLength: 5, minLength: 5 },
+  },
+  required: ["id"],
+  maxProperties: 1,
+  additionalProperties: false,
+} as const satisfies JSONSchema;
+
+export const shortUrlDtoSchema = {
+  type: "object",
+  properties: {
+    id: { type: "string", maxLength: 5, minLength: 5 },
+  },
+  required: ["id"],
+  maxProperties: 1,
+  additionalProperties: false,
+} as const satisfies JSONSchema;
+
+export const updateUrlDtoSchema = {
+  type: "object",
+  properties: {
+    alias: createUrlDtoSchema.properties.alias,
+  },
+  required: ["alias"],
+  maxProperties: 1,
+  additionalProperties: false,
+} as const satisfies JSONSchema;
+
 export type CreateUserDto = FromSchema<typeof createUserDtoSchema>;
 export type LoginUserDto = FromSchema<typeof loginUserDtoSchema>;
 export type CreateUrlDto = FromSchema<typeof createUrlDtoSchema>;
+export type getUrlDto = FromSchema<typeof getUrlDtoSchema>;
+export type shortUrlDto = FromSchema<typeof shortUrlDtoSchema>;
+export type updateUrlDto = FromSchema<typeof updateUrlDtoSchema>;

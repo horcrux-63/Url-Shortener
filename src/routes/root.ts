@@ -1,6 +1,11 @@
 import { FastifyPluginAsync } from "fastify";
 import { nanoid } from "nanoid/async";
-import { CreateUrlDto, createUrlDtoSchema } from "../json-schema/user_schema";
+import {
+  CreateUrlDto,
+  createUrlDtoSchema,
+  getUrlDto,
+  getUrlDtoSchema,
+} from "../json-schema/user_schema";
 
 const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.post(
@@ -53,20 +58,24 @@ const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
   fastify.get<{ Params: { id: string } }>(
     "/:id",
+    { schema: { params: getUrlDtoSchema } },
     async function (request, reply) {
+      const short = request.params as getUrlDto;
+      if (!short) {
+        reply.code(400).send({ success: false, message: "invalid url" });
+      }
       const client = await fastify.pg.connect();
-
       try {
         const userinfo = await client.query(
           "select original_url from urls where short_url = $1",
-          [request.params.id]
+          [short.id]
         );
         const originalUrl = userinfo.rows[0].original_url;
         if (originalUrl) {
           return reply.redirect(originalUrl);
         }
       } catch (err) {
-        reply.code(400).send("there is an error in the database");
+        return err;
       } finally {
         client.release();
       }

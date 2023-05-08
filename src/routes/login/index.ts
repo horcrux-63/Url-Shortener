@@ -17,6 +17,12 @@ const login: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
           authInfo: false,
         },
         async (request, reply, _, user) => {
+          if (request.user) {
+            reply.code(401).send({
+              success: false,
+              message: "logout first",
+            });
+          }
           if (!user) {
             return reply
               .code(400)
