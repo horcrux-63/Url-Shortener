@@ -12,12 +12,18 @@ const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
       const trustedUser = request.user ? true : false;
 
+      if (!trustedUser && url.alias) {
+        return reply.code(401).send({
+          success: false,
+          message: "login first to add cust0m alias",
+        });
+      }
+
       let id: string = trustedUser && url.alias ? url.alias : await nanoid(5);
 
       const date = new Date();
       const formattedDate = date.toISOString().slice(0, 10);
       const userId = request.user;
-      console.log(request);
 
       try {
         if (trustedUser) {
