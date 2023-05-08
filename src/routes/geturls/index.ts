@@ -1,10 +1,14 @@
 import { FastifyPluginAsync } from "fastify";
-import isURL = require("is-url");
+import isURL from "is-url";
 
 const getUrls: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.get("/", async function (request, reply) {
     const client = await fastify.pg.connect();
     let currentId = request.user;
+
+    if (!currentId) {
+      reply.code(201).send({ success: false, message: "Login first" });
+    }
 
     try {
       const urls = await client.query("select * from urls where id = $1", [
@@ -12,12 +16,16 @@ const getUrls: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       ]);
 
       if (urls.rows[0]) {
-        return urls.rows.map(
-          (elements: { short_url: string; original_url: string }) => ({
-            shorteneUrl: `${request.protocol}://${request.hostname}/${elements.short_url}`,
-            mainUrl: elements.original_url,
-          })
-        );
+        return {
+          success: true,
+          message: "Here are the urls created by you",
+          data: urls.rows.map(
+            (elements: { short_url: string; original_url: string }) => ({
+              shortenedUrl: `${request.protocol}://${request.hostname}/${elements.short_url}`,
+              mainUrl: elements.original_url,
+            })
+          ),
+        };
       }
     } catch (err) {
       reply.code(400).send("there is an error in the database");

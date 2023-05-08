@@ -1,6 +1,8 @@
 import fastifyPassport from "@fastify/passport";
 import { FastifyPluginAsync } from "fastify";
 
+import { loginUserDtoSchema } from "../../json-schema/user_schema";
+
 const login: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.get("/", async function (request, reply) {
     return "login Page";
@@ -8,6 +10,7 @@ const login: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.post(
     "/",
     {
+      schema: { body: loginUserDtoSchema },
       preValidation: fastifyPassport.authenticate(
         "local",
         {

@@ -16,8 +16,10 @@ const register: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       const client = await fastify.pg.connect();
       const password = await bcrypt.hash(user.password, 10);
 
-      if (user.password != user.confirm_password) {
-        return "password doesnt match";
+      if (user.password !== user.confirm_password) {
+        return reply
+          .code(400)
+          .send({ success: false, message: "Password Didn't Match" });
       }
       try {
         await client.query(
@@ -25,12 +27,13 @@ const register: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
           [user.email, password]
         );
       } catch (err) {
-        reply.code(400).send("there is an error in the database");
+        return err;
       } finally {
         client.release();
       }
-
-      return request.body;
+      return reply
+        .code(200)
+        .send({ success: true, message: "Registration Complete" });
     }
   );
 };

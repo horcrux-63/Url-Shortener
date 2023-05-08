@@ -1,40 +1,49 @@
 import { FastifyPluginAsync } from "fastify";
 import { nanoid } from "nanoid/async";
-import isURL = require("is-url");
-
-interface userLink {
-  link: string;
-  alias?: string;
-}
+import { CreateUrlDto, createUrlDtoSchema } from "../json-schema/user_schema";
 
 const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
-  fastify.post("/", async function (request, reply) {
-    let url: userLink = request.body as userLink;
-    const client = await fastify.pg.connect();
-    if (!isURL(url.link)) {
-      reply.status(400).send("Invalid URL");
-      return;
+  fastify.post(
+    "/",
+    { schema: { body: createUrlDtoSchema } },
+    async function (request, reply) {
+      let url: CreateUrlDto = request.body as CreateUrlDto;
+      const client = await fastify.pg.connect();
+
+      const trustedUser = request.user ? true : false;
+
+      let id: string = trustedUser && url.alias ? url.alias : await nanoid(5);
+
+      const date = new Date();
+      const formattedDate = date.toISOString().slice(0, 10);
+      const userId = request.user;
+      console.log(request);
+
+      try {
+        if (trustedUser) {
+          await client.query(
+            "INSERT INTO urls(id,short_url,original_url,expired_date) VALUES ($1, $2, $3, $4)",
+            [userId, id, url.link, formattedDate]
+          );
+        } else {
+          await client.query(
+            "INSERT INTO urls(short_url,original_url,expired_date) VALUES ($1, $2, $3)",
+            [id, url.link, formattedDate]
+          );
+        }
+      } catch (err) {
+        return err;
+      } finally {
+        client.release();
+      }
+      const generatedUrl = `${request.protocol}://${request.hostname}/${id}`;
+      return reply.code(200).send({
+        success: true,
+        message: "url generated successfully",
+        url: generatedUrl,
+      });
     }
-    let id: string = await nanoid(5);
-    if (url.alias) {
-      id = url.alias;
-    }
-    const date = new Date();
-    const formattedDate = date.toISOString().slice(0, 10);
-    const userId = request.user;
-    try {
-      await client.query(
-        "INSERT INTO urls(id,short_url,original_url,expired_date) VALUES ($1, $2, $3, $4)",
-        [userId, id, url.link, formattedDate]
-      );
-    } catch (err) {
-      console.log(err);
-      reply.code(400).send("there is an error in the database");
-    } finally {
-      client.release();
-    }
-    return `${request.protocol}://${request.hostname}/${id}`;
-  });
+  );
 
   fastify.get<{ Params: { id: string } }>(
     "/:id",
