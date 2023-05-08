@@ -67,6 +67,7 @@ const getUrls: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
           "update urls set short_url=$1 where short_url = $2 AND id = $3",
           [newUrl.alias, shortUrl.id, currentUserId]
         );
+
         if (updated["rowCount"]) {
           return reply.code(200).send({
             success: true,
@@ -88,18 +89,39 @@ const getUrls: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
   fastify.delete<{ Params: { id: string } }>(
     "/:id",
+    {
+      schema: {
+        params: shortUrlDtoSchema,
+      },
+    },
     async function (request, reply) {
       const client = await fastify.pg.connect();
 
-      const shortUrl = request.params.id;
+      const shortUrl = request.params as shortUrlDto;
+      const currentUserId = request.user;
 
+      if (!currentUserId) {
+        reply.code(400).send({
+          success: false,
+          message: "login to delete urls",
+        });
+      }
       try {
         const deleted = await client.query(
-          "delete from urls where short_url =$1",
-          [shortUrl]
+          "delete from urls where short_url =$1 AND id = $2",
+          [shortUrl.id, currentUserId]
         );
-        if (deleted["rowCount"]) return "url deleted successfully";
-        else return "url not found";
+        if (deleted["rowCount"]) {
+          return reply.code(200).send({
+            success: true,
+            message: "url delete sucessfully",
+          });
+        } else {
+          return reply.code(500).send({
+            success: false,
+            message: "No such url found",
+          });
+        }
       } catch (err) {
         reply.code(400).send("there is an error in the database");
       } finally {
