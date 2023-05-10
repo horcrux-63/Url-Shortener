@@ -7,6 +7,7 @@ import { FastifyPluginAsync } from "fastify";
 import * as fs from "fs";
 import { join } from "path";
 import { configurePassport } from "./configs/passport";
+import { schedule } from "./expiration";
 dotenv.config();
 
 export type AppOptions = {
@@ -32,6 +33,8 @@ const app: FastifyPluginAsync<AppOptions> = async (
   void fastify.register(fastifyPassport.secureSession());
 
   configurePassport(fastify, opts);
+
+  schedule(fastify, opts);
   // Do not touch the following lines
 
   // This loads all plugins defined in plugins

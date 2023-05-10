@@ -1,5 +1,6 @@
 import { FastifyPluginAsync } from "fastify";
 import { nanoid } from "nanoid/async";
+import { expire } from "../expiration";
 import {
   CreateUrlDto,
   createUrlDtoSchema,
@@ -42,6 +43,7 @@ const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
             [id, url.link, formattedDate]
           );
         }
+        expire.add(id, { key: id }, { delay: 20000 });
       } catch (err) {
         return err;
       } finally {
@@ -81,7 +83,6 @@ const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       }
     }
   );
-
   fastify.get("/", async function (request, reply) {
     return { root: true };
   });
