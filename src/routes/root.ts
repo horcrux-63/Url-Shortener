@@ -11,7 +11,16 @@ import {
 const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.post(
     "/",
-    { schema: { body: createUrlDtoSchema } },
+
+    {
+      config: {
+        rateLimit: {
+          max: 10,
+          timeWindow: "1 day",
+        },
+      },
+      schema: { body: createUrlDtoSchema },
+    },
     async function (request, reply) {
       let url: CreateUrlDto = request.body as CreateUrlDto;
       const client = await fastify.pg.connect();

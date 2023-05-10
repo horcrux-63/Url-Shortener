@@ -2,6 +2,7 @@ import AutoLoad, { AutoloadPluginOptions } from "@fastify/autoload";
 import helmet from "@fastify/helmet";
 import fastifyPassport from "@fastify/passport";
 import { fastifyPostgres } from "@fastify/postgres";
+import rateLimit from "@fastify/rate-limit";
 import { fastifySecureSession } from "@fastify/secure-session";
 import * as dotenv from "dotenv";
 import { FastifyPluginAsync } from "fastify";
@@ -37,6 +38,22 @@ const app: FastifyPluginAsync<AppOptions> = async (
   configurePassport(fastify, opts);
 
   schedule(fastify, opts);
+  await fastify.register(rateLimit, {
+    max: 100,
+    timeWindow: "1 minute",
+  });
+
+  fastify.setNotFoundHandler(
+    {
+      preHandler: fastify.rateLimit({
+        max: 4,
+        timeWindow: 500000,
+      }),
+    },
+    function (request, reply) {
+      reply.code(404).send({ hello: "world" });
+    }
+  );
   // Do not touch the following lines
 
   // This loads all plugins defined in plugins

@@ -25,6 +25,7 @@
     "@fastify/helmet": "^10.1.1",
     "@fastify/passport": "^2.3.0",
     "@fastify/postgres": "^5.2.0",
+    "@fastify/rate-limit": "^8.0.0",
     "@fastify/secure-session": "^6.1.0",
     "@fastify/sensible": "^5.0.0",
     "bcrypt": "^5.1.0",
