@@ -1,4 +1,5 @@
 import AutoLoad, { AutoloadPluginOptions } from "@fastify/autoload";
+import helmet from "@fastify/helmet";
 import fastifyPassport from "@fastify/passport";
 import { fastifyPostgres } from "@fastify/postgres";
 import { fastifySecureSession } from "@fastify/secure-session";
@@ -22,7 +23,7 @@ const app: FastifyPluginAsync<AppOptions> = async (
   opts
 ): Promise<void> => {
   // Place here your custom code!
-  void fastify.register(helmet);
+  fastify.register(helmet);
   fastify.register(fastifyPostgres, {
     connectionString: process.env.SECURED_PASSWORD,
   });
@@ -56,16 +57,3 @@ const app: FastifyPluginAsync<AppOptions> = async (
 
 export default app;
 export { app, options };
-function helmet(
-  instance: FastifyInstance<
-    RawServerDefault,
-    IncomingMessage,
-    ServerResponse<IncomingMessage>,
-    FastifyBaseLogger,
-    FastifyTypeProvider
-  >,
-  opts: FastifyPluginOptions,
-  done: (err?: Error | undefined) => void
-): void {
-  throw new Error("Function not implemented.");
-}
