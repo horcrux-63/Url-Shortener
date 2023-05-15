@@ -13,12 +13,13 @@ const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     "/",
 
     {
-      config: {
-        rateLimit: {
-          max: 10,
-          timeWindow: "1 day",
+      preHandler: fastify.rateLimit({
+        max: async (request, key) => {
+          if (request.user) return 10;
+          return 5;
         },
-      },
+        timeWindow: "1 day",
+      }),
       schema: { body: createUrlDtoSchema },
     },
     async function (request, reply) {
@@ -27,32 +28,33 @@ const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
       const trustedUser = request.user ? true : false;
 
+      // return request.user;
+
       if (!trustedUser && url.alias) {
         return reply.code(401).send({
           success: false,
-          message: "login first to add cust0m alias",
+          message: "login first to add custom alias",
         });
       }
 
       let id: string = trustedUser && url.alias ? url.alias : await nanoid(5);
-
-      const date = new Date();
-      const formattedDate = date.toISOString().slice(0, 10);
       const userId = request.user;
 
       try {
         if (trustedUser) {
           await client.query(
-            "INSERT INTO urls(id,short_url,original_url,expired_date) VALUES ($1, $2, $3, $4)",
-            [userId, id, url.link, formattedDate]
+            "INSERT INTO urls(id,short_url,original_url) VALUES ($1, $2, $3)",
+            [userId, id, url.link]
           );
+          if (url.expire) {
+            expire.add(id, { key: id }, { delay: url.expire * 1000 });
+          }
         } else {
           await client.query(
-            "INSERT INTO urls(short_url,original_url,expired_date) VALUES ($1, $2, $3)",
-            [id, url.link, formattedDate]
+            "INSERT INTO urls(short_url,original_url) VALUES ($1, $2)",
+            [id, url.link]
           );
         }
-        expire.add(id, { key: id }, { delay: 20000 });
       } catch (err) {
         return err;
       } finally {

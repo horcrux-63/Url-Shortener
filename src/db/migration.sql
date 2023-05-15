@@ -1,0 +1,16 @@
+CREATE SEQUENCE user_id_seq;
+
+CREATE TABLE userinfo (
+  id BIGINT DEFAULT NEXTVAL('user_id_seq') PRIMARY KEY,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  role VARCHAR(255) NOT NULL DEFAULT 'user'
+);
+
+CREATE TABLE Urls (
+  id BIGINT REFERENCES userinfo(id),
+  short_url VARCHAR(255) PRIMARY KEY,
+  original_url VARCHAR(2048) NOT NULL,
+  creation_time TIMESTAMP NOT NULL DEFAULT NOW(),
+  url_redirected INTEGER NOT NULL DEFAULT 0
+);

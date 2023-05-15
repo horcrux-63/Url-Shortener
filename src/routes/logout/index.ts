@@ -5,6 +5,10 @@ const logout: FastifyPluginAsync = async (fastify, _opts): Promise<void> => {
   fastify.post(
     "/",
     {
+      config: {
+        rateLimit: false,
+      },
+
       preValidation: fastifyPassport.authenticate(
         "local",
         { authInfo: false },

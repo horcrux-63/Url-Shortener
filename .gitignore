@@ -65,4 +65,4 @@ test/types/index.js
 dist
 
 .env
-.secret-key
+secret-key

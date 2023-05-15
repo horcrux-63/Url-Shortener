@@ -23,8 +23,8 @@ const register: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       }
       try {
         await client.query(
-          "INSERT INTO userinfo(email,password,role) VALUES ($1, $2, $3)",
-          [user.email, password, "user"]
+          "INSERT INTO userinfo(email,password) VALUES ($1, $2)",
+          [user.email, password]
         );
       } catch (err) {
         return err;

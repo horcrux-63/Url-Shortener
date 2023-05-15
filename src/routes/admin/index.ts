@@ -1,17 +1,11 @@
 import { FastifyPluginAsync } from "fastify";
 
-import {
-  shortUrlDto,
-  shortUrlDtoSchema,
-  updateUrlDto,
-  updateUrlDtoSchema,
-} from "../../json-schema/user_schema";
+import { shortUrlDto, shortUrlDtoSchema } from "../../json-schema/user_schema";
 
 const admin: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.get("/", async function (request, reply) {
     let client = await fastify.pg.connect();
     let currentId = request.user;
-
     if (!currentId) {
       reply.code(401).send({ success: false, message: "unauthorize access" });
     }
@@ -62,71 +56,6 @@ const admin: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       client.release();
     }
   });
-
-  fastify.put<{ Params: { id: string } }>(
-    "/:id",
-    {
-      schema: {
-        params: shortUrlDtoSchema,
-        body: updateUrlDtoSchema,
-      },
-    },
-    async function (request, reply) {
-      let client = await fastify.pg.connect();
-
-      const shortUrl = request.params as shortUrlDto;
-      const newUrl = request.body as updateUrlDto;
-
-      const currentUserId = request.user;
-
-      if (!currentUserId) {
-        reply.code(400).send({
-          success: false,
-          message: "unauthorized access",
-        });
-      }
-
-      try {
-        const userinfo = await client.query(
-          "select * from userinfo where id = $1",
-          [currentUserId]
-        );
-        if (userinfo.rows[0].role != "admin") {
-          reply
-            .code(401)
-            .send({ success: false, message: "unauthorized access" });
-        }
-      } catch (err) {
-        return err;
-      } finally {
-        client.release();
-      }
-
-      client = await fastify.pg.connect();
-      try {
-        const updated = await client.query(
-          "update urls set short_url=$1 where short_url = $2",
-          [newUrl.alias, shortUrl.id]
-        );
-
-        if (updated["rowCount"]) {
-          return reply.code(200).send({
-            success: true,
-            message: "url updated sucessfully",
-          });
-        } else {
-          return reply.code(500).send({
-            success: false,
-            message: "No such url found",
-          });
-        }
-      } catch (err) {
-        return err;
-      } finally {
-        client.release();
-      }
-    }
-  );
 
   fastify.delete<{ Params: { id: string } }>(
     "/:id",

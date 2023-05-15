@@ -28,9 +28,10 @@ export const createUrlDtoSchema = {
   properties: {
     link: { type: "string", format: "url", maxLength: 255, minLength: 2 },
     alias: { type: "string", minLength: 5, maxLength: 5 },
+    expire: { type: "number" },
   },
   required: ["link"],
-  maxProperties: 2,
+  maxProperties: 3,
   additionalProperties: false,
 } as const satisfies JSONSchema;
 
